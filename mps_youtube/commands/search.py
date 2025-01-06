@@ -216,7 +216,14 @@ Use 'set search_music False' to show results not in the Music category.""" % ter
         else:
             failmsg = "User %s not found or has no videos."  % termuser[1]
     msg = str(msg).format(c.w, c.y, c.y, term, user)
-    results = pafy.all_videos_from_channel(channel_id)
+
+    videos = pafy.all_videos_from_channel(channel_id)
+    query = term.lower() if term else None
+
+    if query:
+        results = [v for v in videos if query in v.get('title', '').lower() or query in v.get('description', '').lower()]
+    else:
+        results = videos
     _display_search_results(progtext, results, msg, failmsg)
 
 
@@ -558,7 +565,7 @@ def yt_url(url: str, print_title: bool = False):
             if v_id in v_ids:
                 continue
             p = pafy.get_video_info(v_id)
-        except (IOError, ValueError) as e:
+        except (IOError, ValueError, Exception) as e:
             g.message = c.r + str(e) + c.w
             g.content = g.content or content.generate_songlist_display(
                     zeromsg=g.message)
